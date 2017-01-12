@@ -15,15 +15,17 @@ train_data = {'features': X_train, 'labels': y_train}
 util.save_data(train_data, '../train.p')
 
 """
+
 # Remove the previous weights and bias for new session
 tf.reset_default_graph()
 conv_net = TrafficNet()
 
-conv_net.train(train_file='../train.p',
-               save_loc='../saved_models/traffic-net.chkpt',
-               epochs=20,
-               learn_rate=0.001,
-               batch_size=256,
-               keep_prob=0.6)
-time.sleep(5)
-conv_net.test(test_file='../data/test.p', model='../saved_models/', batch_size=256)
+# conv_net.train(train_file='../train.p',
+#                save_loc='./model/traffic-net.chkpt',
+#                epochs=1,
+#                learn_rate=0.001,
+#                batch_size=256,
+#                keep_prob=0.6)
+# time.sleep(5)
+conv_net.test(model='./model/traffic-net.chkpt', test_file='../data/test.p', batch_size=256)
+

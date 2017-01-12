@@ -90,7 +90,7 @@ class TrafficNet(object):
         self.logits = tf.add(tf.matmul(self.fc2, self.w['logit']), self.b['logit'])
 
     def train(self, train_file='../data/train.p', save_loc='../saved_models/vgg.chkpt',
-              epochs=10, learn_rate=0.001, batch_size=128, keep_prob=0.5):
+              epochs=10, learn_rate=0.001, batch_size=128, keep_prob=0.5, acc_threshold=0.999):
 
         # Update Learning Rate and Batch Size
         self.learn_rate = learn_rate
@@ -152,8 +152,8 @@ class TrafficNet(object):
                                                                                                    validation_loss,
                                                                                                    validation_accuracy))
                 print()
-                if validation_accuracy > 0.995:
-                    print("Reached accuracy requirement (99.5%). Training completed.")
+                if validation_accuracy > acc_threshold:
+                    print("Reached accuracy requirement. Training completed.")
                     break
 
             saver.save(sess, save_loc)
@@ -166,7 +166,7 @@ class TrafficNet(object):
             print("\nOptimization Finished!! Training time: %02dh:%02dm:%02ds"
                   % (h, m, s))
 
-    def test(self, test_file='../data/test.p', model='../saved_models/vgg.chkpt', batch_size=128):
+    def test(self, model, test_file='../data/test.p', batch_size=128):
         test_data = load_data(test_file)
         x_test, y_test = test_data['features'], test_data['labels']
         # Model Evaluation
@@ -175,11 +175,10 @@ class TrafficNet(object):
         accuracy_operation = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
         saver = tf.train.Saver()
-        current_graph = tf.get_default_graph()
         # Train Model
-        with tf.Session(graph=current_graph) as sess:
+        with tf.Session() as sess:
             print("Start Testing...")
-            saver.restore(sess, tf.train.latest_checkpoint(model))
+            saver.restore(sess, model)
             print("Restored Model Successfully.")
             num_samples = len(x_test)
             x_test, y_test = shuffle(x_test, y_test)
