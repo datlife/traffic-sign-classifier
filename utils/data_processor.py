@@ -11,13 +11,12 @@ def load_data(train_path):
     return train
 
 
-def save_data(file):
-    with open('./train.p', 'wb') as f:
+def save_data(file, path):
+    with open(path, 'wb') as f:
         pickle.dump(file, f)
 
 
 def augment_data(X_train, y_train):
-
     total_traffic_signs = len(set(y_train))
     # Calculate how many images in one traffic sign
     ts, imgs_per_sign = np.unique(y_train, return_counts=True)

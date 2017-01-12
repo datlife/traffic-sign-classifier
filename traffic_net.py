@@ -99,13 +99,11 @@ class TrafficNet(object):
 
         train = load_data(train_file)
         x_train, y_train = train['features'], train['labels']
-
         one_hot_y = tf.one_hot(self.labels, len(set(y_train)))
 
         # Soft-Max
         cross_entropy = tf.nn.softmax_cross_entropy_with_logits(self.logits, one_hot_y)
         loss = tf.reduce_mean(cross_entropy)
-
         # ////////////////////////// OPTIMIZATION /////////////////////////////
         epoch_step = tf.Variable(0, name='epoch')
         exp_lr = tf.train.exponential_decay(self.learn_rate, epoch_step, self.batch_size, 0.95, name='expo_rate')
@@ -153,10 +151,9 @@ class TrafficNet(object):
                 print("LR: {:<7.8f} Validation loss: {:<6.5f} Validation Accuracy = {:.3f}".format(lr,
                                                                                                    validation_loss,
                                                                                                    validation_accuracy))
-
                 print()
-                if validation_accuracy > 0.993:
-                    print("Training completed.")
+                if validation_accuracy > 0.995:
+                    print("Reached accuracy requirement (99.5%). Training completed.")
                     break
 
             saver.save(sess, save_loc)
@@ -168,6 +165,34 @@ class TrafficNet(object):
             h, m = divmod(m, 60)
             print("\nOptimization Finished!! Training time: %02dh:%02dm:%02ds"
                   % (h, m, s))
+
+    def test(self, test_file='../data/test.p', model='../saved_models/vgg.chkpt', batch_size=128):
+        test_data = load_data(test_file)
+        x_test, y_test = test_data['features'], test_data['labels']
+        # Model Evaluation
+        one_hot_y = tf.one_hot(self.labels, len(set(y_test)))
+        correct_prediction = tf.equal(tf.argmax(self.logits, 1), tf.argmax(one_hot_y, 1))
+        accuracy_operation = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+
+        saver = tf.train.Saver()
+        current_graph = tf.get_default_graph()
+        # Train Model
+        with tf.Session(graph=current_graph) as sess:
+            print("Start Testing...")
+            saver.restore(sess, tf.train.latest_checkpoint(model))
+            print("Restored Model Successfully.")
+            num_samples = len(x_test)
+            x_test, y_test = shuffle(x_test, y_test)
+            print("Testing on {} samples".format(num_samples))
+            total_acc = 0.0
+            for offset in range(0, num_samples, batch_size):
+                end = offset + batch_size
+                batch_x, batch_y = x_test[offset:end], y_test[offset:end]
+
+                _acc = sess.run(accuracy_operation, feed_dict={self.features: batch_x, self.labels: batch_y})
+                total_acc += _acc * len(batch_x)
+            print("Test Accuracy = {:.4f}".format(total_acc/num_samples))
+            print("\nFinished Testing. Model is not saved")
 
     def evaluate(self, features, labels, acc_op, loss_op):
         num_of_examples = len(features)
