@@ -20,7 +20,7 @@ def biases(name, n_labels):
     :return: TensorFlow bias
     """
     # TODO: Return biases
-    b = tf.Variable(tf.zeros(n_labels),name=name)
+    b = tf.Variable(tf.zeros(n_labels), name=name)
     return b
 
 
@@ -83,7 +83,7 @@ def traffic_sign_net(x, keep_prob=0.5):
     # image size is 32x32x3 ... change fc5 if needed
     # use drop out significantly improves the result
     # max pool affects the accuracy
-    tf.variable_scope(tf.get_variable_scope())
+    tf.variable_scope(tf.get_variable_scope(), reuse=False)
     w = {
         'conv1_0': weights('conv1_0', [1, 1, 3, 3]),
         'conv1_1': weights('conv1_1', [3, 3, 3, 16]),

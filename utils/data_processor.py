@@ -1,6 +1,6 @@
 import numpy as np
 import pickle
-from image_processor import random_transform
+from utils.image_processor import random_transform
 
 
 def load_data(train_path):

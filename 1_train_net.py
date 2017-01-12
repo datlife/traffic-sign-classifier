@@ -1,11 +1,12 @@
 import numpy as np
 import time
-from data_processor import load_data, augment_data, save_data
-from net_builder import *
+from utils.data_processor import load_data, augment_data, save_data
+from utils.net_builder import *
 from sklearn.utils import shuffle
 
 # drop out rate : https://www.cs.toronto.edu/~hinton/absps/JMLRdropout.pdf
 # Hyper-parameters
+
 EPOCHS = 5
 BATCH_SIZE = 256
 LEARNING_RATE = 0.0001
@@ -14,7 +15,7 @@ save_loc = './saved_models/vgg.chkpt'
 
 
 # ///////////////////////////// IMPORT DATA SET ////////////////////////////////////////
-train_path = '../train.p'
+train_path = '../data/train.p'
 train = load_data(train_path)
 X_train, y_train = train['features'], train['labels']
 
@@ -52,9 +53,6 @@ saver = tf.train.Saver()
 
 # ///////////////////////////VISUALIZATION/////////////////////////////////////
 # TensorBoard - Debugging
-# scalar_summary: values over time
-# histogram_summary: value distribution from one particular layer.
-recorder = tf.summary.FileWriter('./logs/', graph=tf.get_default_graph())
 
 
 def evaluate(x, y_data, loss_op):
@@ -82,7 +80,7 @@ with tf.Session() as sess:
     except Exception as e:
         print(e)
         print("No model found...Start building a new one")
-        sess.run(tf.global_variables_initializer())
+        sess.run(tf.initialize_all_variables())
 
     num_examples = len(X_train)
     # sess.run(tf.local_variables_initializer())

@@ -1,5 +1,5 @@
-from data_processor import load_data
-from net_builder import *
+from utils.data_processor import load_data
+from utils.net_builder import *
 from sklearn.utils import shuffle
 
 
