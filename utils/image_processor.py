@@ -10,16 +10,16 @@ def random_transform(img):
     # There are total of 6 transformation
     # I will create an boolean array of 6 elements [ 0 or 1]
     a = np.random.randint(0, 2, [1, 5]).astype('bool')[0]
-    if a[0] == 1:
-        img = translate(img)
+    # if a[0] == 1:
+    #     img = translate(img)
     if a[1] == 1:
         img = rotate(img)
     if a[2] == 1:
         img = shear(img)
     if a[3] == 1:
         img = blur(img)
-    if a[4] == 1:
-        img = gamma(img)
+    # if a[4] == 1:
+    #     img = gamma(img)
     return img
 
 
@@ -39,7 +39,7 @@ def translate(img):
 def rotate(img):
     row, col, channel = img.shape
 
-    angle = np.random.uniform(-90, 90)
+    angle = np.random.uniform(-60, 60)
     rotation_point = (row / 2, col / 2)
     rotation_matrix = cv2.getRotationMatrix2D(rotation_point, angle, 1)
 
@@ -75,13 +75,23 @@ def gamma(img):
     return new_img
 
 
-def pre_process(img):
-    img = img/255
-    return img
+def mean_image(images):
+    # Find the mean image
+    chann_index_swap = np.swapaxes(images, 0, 3)
+    mean_img= [[[sum(pixel)/len(pixel) for pixel in col] for col in row] for row in chann_index_swap]
+    mean_img = np.swapaxes(mean_img, 0, 2)
+    mean_img = np.swapaxes(mean_img, 0, 1)
+    return mean_img
+
+
+def pre_process(img, mean_img):
+    # Normalize data
+    normalized_img = img/255.
+    normalized_img -= mean_img
+    return normalized_img
+
 # def gcn(image):
 
 # def brighten(img, level):
 #
 # def darken(img, level):
-#
-# def blur(img, level):

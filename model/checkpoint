@@ -1,2 +1,0 @@
-model_checkpoint_path: "traffic-net.chkpt"
-all_model_checkpoint_paths: "traffic-net.chkpt"
