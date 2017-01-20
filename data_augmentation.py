@@ -11,8 +11,8 @@ import matplotlib.pyplot as plt
 plt.interactive(False)
 
 
-OUTPUT_FILE_PATH = '../train3.p'
-SCALE_FACTOR = 3.5
+OUTPUT_FILE_PATH = '../train1.p'
+SCALE_FACTOR = 3
 train_path = '../data/train.p'
 
 train = util.load_data(train_path)
