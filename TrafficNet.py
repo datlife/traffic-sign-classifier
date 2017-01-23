@@ -275,6 +275,7 @@ class TrafficNet(object):
             pred = plt.subplot(1, 2, 2)
             pred.barh(y_pos, probs[i], color='red')
             pred.set_yticks(y_pos)
+            pred.invert_yaxis()
             pred.set_yticklabels([signs[j] for j in id[i]])
             pred.set_xlabel("Probabilities")
             plt.tight_layout()
