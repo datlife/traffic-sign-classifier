@@ -12,14 +12,14 @@ def random_transform(img):
     a = np.random.randint(0, 2, [1, 5]).astype('bool')[0]
     # if a[0] == 1:
     #     img = translate(img)
-    if a[1] == 1:
-        img = rotate(img)
+    # if a[1] == 1:
+    #     img = rotate(img)
     if a[2] == 1:
         img = shear(img)
     if a[3] == 1:
         img = blur(img)
-    # if a[4] == 1:
-    #     img = gamma(img)
+    if a[4] == 1:
+        img = gamma(img)
     return img
 
 

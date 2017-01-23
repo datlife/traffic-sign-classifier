@@ -43,7 +43,7 @@ def max_pool_layer(data, sub_sampling_rate=2):
     pool_layer = tf.nn.max_pool(value=data,
                                 ksize=[1, k, k, 1],
                                 strides=[1, k, k, 1],
-                                padding='SAME')
+                                padding='VALID')
     return pool_layer
 
 

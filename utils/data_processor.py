@@ -85,7 +85,7 @@ def plt_confusion_matrix(labels, pred, normalize=False, title='Confusion matrix'
     else:
         print('Confusion matrix, without normalization')
 
-    plt.figure()
+    plt.figure(figsize=(15,10))
     plt.imshow(cm, interpolation='nearest', aspect='auto', cmap=plt.cm.Blues)
     plt.title(title)
     plt.colorbar()
@@ -93,7 +93,6 @@ def plt_confusion_matrix(labels, pred, normalize=False, title='Confusion matrix'
     plt.xticks(tick_marks, classes, rotation=45)
     plt.yticks(tick_marks, classes)
 
-    plt.tight_layout()
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
     plt.show()
@@ -127,5 +126,4 @@ def visualize_softmax_probabilities(model, image, num_probs=5, correct_predictio
     plt.barh(np.arange(num_probs)[::-1], np.array(pred['Probability']), align='center')
     plt.xlim([0, 1.0])
     plt.yticks(np.arange(num_probs)[::-1], np.array(pred['SignName']))
-
     plt.tight_layout()

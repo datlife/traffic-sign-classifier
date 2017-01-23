@@ -2,11 +2,12 @@ import time
 import numpy as np
 from utils.data_processor import load_data, plt_confusion_matrix
 from utils.net_builder import *
-from utils.image_processor import mean_image
 from sklearn.utils import shuffle
 from sklearn.preprocessing import LabelBinarizer
+import matplotlib.pyplot as plt
 
-# Paper : http://danielnouri.org/notes/2014/12/17/using-convolutional-neural-nets-to-detect-facial-keypoints-tutorial/#second-model-convolutions
+# Paper :
+# http://danielnouri.org/notes/2014/12/17/using-convolutional-neural-nets-to-detect-facial-keypoints-tutorial/#second-model-convolutions
 
 
 class TrafficNet(object):
@@ -15,60 +16,61 @@ class TrafficNet(object):
         self.learn_rate = 0.001
         self.batch_size = 128
         self.keep_prob = 0.5
-
         # Features and Labels
         self.features = tf.placeholder(tf.float32, (None, 32, 32, 3))  # Default image size is 32x32x3
         self.labels = tf.placeholder(tf.int32, None)
 
         self.w = {
-            'conv1_1': weights('conv1_1', [3, 3, 3, 32]),
-            'conv1_2': weights('conv1_2', [3, 3, 32, 32]),
+            'conv1_0': weights('conv1_0', [1, 1, 3, 3]),
+            'conv1_1': weights('conv1_1', [3, 3, 3, 16]),
+            'conv1_2': weights('conv1_2', [3, 3, 16, 16]),
 
-            'conv2_1': weights('conv2_1', [5, 5, 32, 32]),
-            'conv2_2': weights('conv2_2', [5, 5, 32, 32]),
+            'conv2_1': weights('conv2_1', [3, 3, 16, 32]),
+            'conv2_2': weights('conv2_2', [3, 3, 32, 32]),
 
-            'conv3_1': weights('conv3_1', [5, 5, 32, 64]),
-            'conv3_2': weights('conv3_2', [5, 5, 64, 64]),
-            'conv3_3': weights('conv3_3', [5, 5, 64, 64]),
+            'conv3_1': weights('conv3_1', [3, 3, 32, 64]),
+            'conv3_2': weights('conv3_2', [3, 3, 64, 64]),
 
-            'fc1': weights('fc1', [8192, 1024]),
+            'fc1': weights('fc1', [4096, 1024]),
             'fc2': weights('fc2', [1024, 1024]),
             'logit': weights('logits', [1024, 43])  # 43 since there is 43 traffic signs in Germany Data set
         }
         self.b = {
-            'conv1_1': biases('conv1_1', 32),
-            'conv1_2': biases('conv1_2', 32),
+            'conv1_0': biases('conv1_0', 3),
+            'conv1_1': biases('conv1_1', 16),
+            'conv1_2': biases('conv1_2', 16),
 
             'conv2_1': biases('conv2_1', 32),
             'conv2_2': biases('conv2_2', 32),
 
             'conv3_1': biases('conv3_1', 64),
             'conv3_2': biases('conv3_2', 64),
-            'conv3_3': biases('conv3_3', 64),
 
             'fc1': biases('fc1', 1024),
             'fc2': biases('fc2', 1024),
+            'fc3': biases('fc3', 1024),
+
             'logit': biases('logits', 43)
         }
 
         # Inspired by VGG-Net Architecture
-        self.conv1_1 = conv_layer(self.features, self.w['conv1_1'], self.b['conv1_1'])
+        self.conv_0 = conv_layer(self.features, self.w['conv1_0'], self.b['conv1_0'])
+        self.conv1_1 = conv_layer(self.conv_0, self.w['conv1_1'], self.b['conv1_1'])
         self.conv1_2 = conv_layer(self.conv1_1, self.w['conv1_2'], self.b['conv1_2'])
         self.pool_1 = max_pool_layer(self.conv1_2)
-        self.pool_1 = tf.nn.dropout(self.pool_1, self.keep_prob-0.4)
+        self.pool_1 = tf.nn.dropout(self.pool_1, self.keep_prob + 0.25)
 
         self.conv2_1 = conv_layer(self.conv1_2, self.w['conv2_1'], self.b['conv2_1'])
         self.conv2_2 = conv_layer(self.conv2_1, self.w['conv2_2'], self.b['conv2_2'])
         self.pool_2 = max_pool_layer(self.conv2_2)
-        self.pool_2 = tf.nn.dropout(self.pool_2, self.keep_prob-0.3)
+        self.pool_2 = tf.nn.dropout(self.pool_2, self.keep_prob + 0.2)
 
         self.conv3_1 = conv_layer(self.pool_2, self.w['conv3_1'], self.b['conv3_1'])
         self.conv3_2 = conv_layer(self.conv3_1, self.w['conv3_2'], self.b['conv3_2'])
-        self.conv3_3 = conv_layer(self.conv3_2, self.w['conv3_3'], self.b['conv3_3'])
-        self.pool_3 = max_pool_layer(self.conv3_3)
-        self.pool_3 = tf.nn.dropout(self.pool_3, self.keep_prob-0.2)
+        self.pool_3 = max_pool_layer(self.conv3_2)
+        self.pool_3 = tf.nn.dropout(self.pool_3, self.keep_prob + 0.2)
 
-        self.flatten_layer = flatten(self.pool_2)
+        self.flatten_layer = flatten(self.pool_3)
 
         self.fc1 = tf.matmul(self.flatten_layer, self.w['fc1'])
         self.fc1 = tf.add(self.fc1, self.b['fc1'])
@@ -135,10 +137,12 @@ class TrafficNet(object):
                                                                         self.labels: batch_y})
 
                 validation_accuracy, validation_loss = self.evaluate(x_val, y_val, accuracy_operation, loss)
-
-                print("LR: {:<7.8f} Validation loss: {:<6.5f} Validation Accuracy = {:.3f}".format(lr,
+                epoch_time = time.clock() - start_time
+                min, sec = divmod(epoch_time, 60)
+                print("LR: {:<7.6f} Loss: {:<6.5f} Accuracy = {:.3f} || Time: %02dm:%02ds".format(lr,
                                                                                                    validation_loss,
-                                                                                                   validation_accuracy))
+                                                                                                   validation_accuracy,
+                                                                                                  (min, sec)))
                 if validation_accuracy > acc_threshold:
                     print("Reached accuracy requirement. Training completed.")
                     break
@@ -154,8 +158,6 @@ class TrafficNet(object):
                   % (h, m, s))
 
     def test(self, x_test, y_test, model, batch_size=128):
-
-
         # Model Evaluation
         one_hot_y = tf.one_hot(self.labels, len(set(y_test)))
         correct_prediction = tf.equal(tf.argmax(self.logits, 1), tf.argmax(one_hot_y, 1))
@@ -201,43 +203,38 @@ class TrafficNet(object):
         """
         Returns the accuracy of the trained model on the provided data.
         Expects `test_data` to be
-        :param features: a tuple containing (data, labels).
-        :param labels:
-        :param plot: lot out the confusion matrix
+        :param features:  input data
+        :param labels:    expected output
+        :param model:
+        :param plot:      lot out the confusion matrix
         :param normalize:
         :return:
         """
-
         one_hot_labels = LabelBinarizer().fit_transform(labels)
 
         count, correct = 0, 0
         predictions = self.predict(features, model)
-        print(predictions.shape)
         for obs in range(features.shape[0]):
             if predictions[obs, ...].argmax() == one_hot_labels[obs, ...].argmax():
                 correct += 1
             count += 1
-
-        print("Correct predictions: ", (correct / count) * 100, "%")
 
         if plot:
             plt_confusion_matrix(one_hot_labels, predictions, normalize=normalize)
 
         return correct/count
 
-    def predict(self, img, saved_model='./model/traffic-sign-net.chkpt'):
+    def predict(self, img, saved_model='./model/traffic-sign-net.chkpt', drop_out=0.5):
         """
         Predict input
         :param img:
         :param  saved_model:
-
         :return: labels array
         """
-
         model = tf.nn.softmax(self.logits)
+        self.keep_prob = drop_out
         result = None
         with tf.Session() as session:
-            print("Start Predicting...")
             tf.train.Saver().restore(session, saved_model)
             if len(img) > 5000:
                 for offset in range(0, len(img), self.batch_size):
@@ -256,3 +253,32 @@ class TrafficNet(object):
                     result = np.concatenate((result, predictions))
 
         return result
+
+    def top_k(self, imgs, k=3, saved_model='./model/vgg.chkpt'):
+        top_k = tf.nn.top_k(self.logits, k=k)
+        with tf.Session() as sess:
+            tf.train.Saver().restore(sess, saved_model)
+            prob, id = sess.run(top_k, feed_dict={self.features: imgs})
+        return prob, id
+
+    def visualize_softmax(self, imgs, signs, saved_model, correct_predictions=None, top_k=3):
+
+        probs, id = self.top_k(imgs, top_k, saved_model)
+        probs = np.exp(probs)
+        y_pos = np.arange(top_k)
+        for i in range(len(imgs)):
+            plt.figure(i+1, figsize=(15, 5))
+            img = plt.subplot(1, 2, 1)
+            img.imshow(imgs[i])
+            if correct_predictions is not None:
+                img.set_title("Correct sign: " + correct_predictions[i])
+            pred = plt.subplot(1, 2, 2)
+            pred.barh(y_pos, probs[i], color='red')
+            pred.set_yticks(y_pos)
+            pred.set_yticklabels([signs[j] for j in id[i]])
+            pred.set_xlabel("Probabilities")
+            plt.tight_layout()
+            plt.setp(pred.get_xticklabels(), visible=False)
+        plt.show()
+
+
