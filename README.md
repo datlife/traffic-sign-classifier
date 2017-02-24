@@ -1,7 +1,7 @@
 ## Traffic Sign Recognition Program
 ### Overview
 
-In this project, I used  deep neural networks and convolutional neural networks to classify traffic signs. I have trained a model inspired by VGG-Net so it can decode traffic signs from natural images by using the [German Traffic Sign Dataset](http://benchmark.ini.rub.de/?section=gtsrb&subsection=dataset). 
+In this project, I used  a convolutional neural networks to classify traffic signs. I have trained a model inspired by VGG-Net so it can decode traffic signs from natural images by using the [German Traffic Sign Dataset](http://benchmark.ini.rub.de/?section=gtsrb&subsection=dataset). 
 
 After the model is trained, user can test on new images of traffic signs you find on the web, or, if you're feeling adventurous pictures of traffic signs you find locally!
 
