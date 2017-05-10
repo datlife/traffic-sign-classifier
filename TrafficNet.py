@@ -96,7 +96,7 @@ class TrafficNet(object):
         cross_entropy = tf.nn.softmax_cross_entropy_with_logits(self.logits, one_hot_y)
         loss = tf.reduce_mean(cross_entropy)
         # ////////////////////////// OPTIMIZATION /////////////////////////////
-        epoch_step = tf.Variable(0, name='epoch')
+        epoch_step = tf.Variable(initial_value=0, name='epoch')
         exp_lr = tf.train.exponential_decay(self.learn_rate, epoch_step, 1000, 0.96, staircase=True, name='expo_rate')
         optimizer = tf.train.AdamOptimizer(exp_lr, name='adam_optimizer')
         training_ops = optimizer.minimize(loss, global_step=epoch_step)
@@ -128,7 +128,7 @@ class TrafficNet(object):
                 x_val = x_train[train_samples:]
                 y_val = y_train[train_samples:]
 
-                print("EPOCH {}: ".format(i + 1), end="")
+                print("EPOCH {}: ".format(i + 1), end='')
                 for offset in range(0, train_samples, self.batch_size):
                     end = offset + self.batch_size
                     batch_x, batch_y = x_train[offset:end], y_train[offset:end]
